@@ -44,6 +44,7 @@ You can also call it programmatically with a directory:
 - `consult-spotlight-default-directory`: Default base directory (default: `~`).
 - `consult-spotlight-min-input`: Minimum input length before starting search.
 - `consult-spotlight-args`: Base command and arguments for `mdfind`.
+- `consult-spotlight-stderr`: File to capture stderr from Spotlight (set to nil to inherit).
 
 ## License
 

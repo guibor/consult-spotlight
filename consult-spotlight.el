@@ -3,7 +3,7 @@
 ;; Copyright (C) 2025
 
 ;; Author: mdf
-;; URL: https://github.com/mdf/consult-spotlight
+;; URL: https://github.com/guibor/consult-spotlight
 ;; Version: 0.1.0
 ;; Package-Requires: ((emacs "29.1") (consult "3.1"))
 ;; Keywords: matching, files, convenience
