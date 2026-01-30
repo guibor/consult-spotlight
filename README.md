@@ -4,8 +4,8 @@ Consult-powered macOS Spotlight (mdfind) search.
 
 ## Requirements
 
-- Emacs 29.1+
-- consult 3.1+
+- Emacs 27.1+
+- consult 1.5+
 - macOS with `mdfind` available
 
 ## Installation

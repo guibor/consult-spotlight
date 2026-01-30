@@ -5,7 +5,7 @@
 ;; Author: mdf
 ;; URL: https://github.com/guibor/consult-spotlight
 ;; Version: 0.1.0
-;; Package-Requires: ((emacs "29.1") (consult "3.1"))
+;; Package-Requires: ((emacs "27.1") (consult "1.5"))
 ;; Keywords: matching, files, convenience
 
 ;; This file is not part of GNU Emacs.
@@ -100,7 +100,7 @@ interactively with a prefix argument, prompt for DIR.  DIR may
 also be a list of directories.  INITIAL is initial minibuffer input."
   (interactive "P")
   (unless (executable-find "mdfind")
-    (user-error "consult-spotlight requires the mdfind command"))
+    (user-error "Consult-spotlight requires the mdfind command"))
   (let* ((dir (cond
                ((stringp dir) dir)
                ((and dir (listp dir)) dir)
