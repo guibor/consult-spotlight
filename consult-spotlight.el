@@ -1,8 +1,8 @@
-;;; consult-spotlight.el --- Spotlight search using Consult -*- lexical-binding: t; -*-
+;;; consult-spotlight.el --- Consult interface to macOS mdfind (Spotlight) -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2025
 
-;; Author: mdf
+;; Author: MDF <sguibor@gmail.com>
 ;; URL: https://github.com/guibor/consult-spotlight
 ;; Version: 0.1.0
 ;; Package-Requires: ((emacs "27.1") (consult "1.5"))
