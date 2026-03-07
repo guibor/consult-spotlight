@@ -39,7 +39,7 @@
   :group 'consult
   :prefix "consult-spotlight-")
 
-(defcustom consult-spotlight-default-directory "~"
+(defcustom consult-spotlight-default-directory "~/"
   "Default base directory for Spotlight searches."
   :type 'directory)
 
@@ -98,7 +98,7 @@ Set to nil to inherit stderr."
 If DIR is a string, search within that directory.  When called
 interactively with a prefix argument, prompt for DIR.  DIR may
 also be a list of directories.  INITIAL is initial minibuffer input."
-  (interactive "P")
+  (interactive "p")
   (unless (executable-find "mdfind")
     (user-error "Consult-spotlight requires the mdfind command"))
   (let* ((dir (cond
