@@ -39,7 +39,7 @@
   :group 'consult
   :prefix "consult-spotlight-")
 
-(defcustom consult-spotlight-default-directory "~"
+(defcustom consult-spotlight-default-directory "~/"
   "Default base directory for Spotlight searches."
   :type 'directory)
 
@@ -96,19 +96,18 @@ Set to nil to inherit stderr."
   "Search with macOS Spotlight for files matching input.
 
 If DIR is a string, search within that directory.  When called
-interactively with a prefix argument, prompt for DIR.  DIR may
-also be a list of directories.  INITIAL is initial minibuffer input."
-  (interactive "P")
+interactively with a prefix argument (C-u), prompt for DIR.  DIR
+may also be a list of directories.  INITIAL is initial minibuffer input."
+  (interactive
+   (when current-prefix-arg
+     (list (read-directory-name "Spotlight directory: "
+                                consult-spotlight-default-directory
+                                nil t))))
   (unless (executable-find "mdfind")
-    (user-error "Consult-spotlight requires the mdfind command"))
-  (let* ((dir (cond
-               ((stringp dir) dir)
-               ((and dir (listp dir)) dir)
-               (dir (read-directory-name "Spotlight directory: "
-                                         consult-spotlight-default-directory
-                                         nil t))
-               (t consult-spotlight-default-directory)))
-         (dirs (if (listp dir) dir (list dir)))
+    (user-error "consult-spotlight requires the mdfind command"))
+  (let* ((dirs (if (and dir (listp dir))
+                   dir
+                 (list (or dir consult-spotlight-default-directory))))
          (prompt (consult-spotlight--prompt dirs))
          (default-directory (file-name-as-directory
                              (expand-file-name (car dirs))))
