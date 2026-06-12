@@ -4,8 +4,8 @@ Consult-powered macOS Spotlight (mdfind) search.
 
 ## Requirements
 
-- Emacs 27.1+
-- consult 1.5+
+- Emacs 28.1+
+- consult 2.0+
 - macOS with `mdfind` available
 
 ## Installation
@@ -16,7 +16,7 @@ MELPA (once published):
 (use-package consult-spotlight
   :after consult
   :custom
-  (consult-spotlight-stderr "/dev/null"))
+  (consult-spotlight-silence-stderr t))
 ```
 
 Manual:
@@ -36,7 +36,7 @@ With a prefix argument (`C-u`), you will be prompted for a base directory.
 You can also call it programmatically with a directory:
 
 ```elisp
-(consult-spotlight \"/path/to/dir\")
+(consult-spotlight "/path/to/dir")
 ```
 
 ## Customization
@@ -44,7 +44,7 @@ You can also call it programmatically with a directory:
 - `consult-spotlight-default-directory`: Default base directory (default: `~`).
 - `consult-spotlight-min-input`: Minimum input length before starting search.
 - `consult-spotlight-args`: Base command and arguments for `mdfind`.
-- `consult-spotlight-stderr`: File to capture stderr from Spotlight (set to nil to inherit).
+- `consult-spotlight-silence-stderr`: Whether to discard stderr from Spotlight.
 
 ## License
 

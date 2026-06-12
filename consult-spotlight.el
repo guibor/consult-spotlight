@@ -5,7 +5,7 @@
 ;; Author: MDF <sguibor@gmail.com>
 ;; URL: https://github.com/guibor/consult-spotlight
 ;; Version: 0.1.0
-;; Package-Requires: ((emacs "27.1") (consult "1.5"))
+;; Package-Requires: ((emacs "28.1") (consult "2.0"))
 ;; Keywords: matching, files, convenience
 
 ;; This file is not part of GNU Emacs.
@@ -54,11 +54,9 @@ The dynamically computed arguments are appended.
 Can be either a string, or a list of strings or expressions."
   :type '(choice string (repeat (choice string sexp))))
 
-(defcustom consult-spotlight-stderr
-  (if (eq system-type 'windows-nt) "NUL" "/dev/null")
-  "File to capture stderr from the Spotlight process.
-Set to nil to inherit stderr."
-  :type '(choice (const :tag "Inherit" nil) file))
+(defcustom consult-spotlight-silence-stderr t
+  "Whether to discard stderr from the Spotlight process."
+  :type 'boolean)
 
 (defvar consult-spotlight-history nil
   "Minibuffer history for `consult-spotlight'.")
@@ -79,16 +77,24 @@ Set to nil to inherit stderr."
                 (car disp)
               (format "%d dirs" (length disp))))))
 
+(defun consult-spotlight--silence-stderr (command)
+  "Return COMMAND with stderr discarded if configured."
+  (if consult-spotlight-silence-stderr
+      (append (list "/bin/sh" "-c" "exec \"$@\" 2>/dev/null" "consult-spotlight")
+              command)
+    command))
+
 (defun consult-spotlight--builder (dirs)
   "Create a Spotlight command builder for DIRS."
   (let ((onlyin (consult-spotlight--onlyin-args dirs)))
     (lambda (input)
       (pcase-let ((`(,arg . ,opts) (consult--command-split input)))
         (unless (string-blank-p arg)
-          (cons (append (consult--build-args consult-spotlight-args)
-                        opts
-                        onlyin
-                        (list arg))
+          (cons (consult-spotlight--silence-stderr
+                 (append (consult--build-args consult-spotlight-args)
+                         opts
+                         onlyin
+                         (list arg)))
                 (cdr (consult--default-regexp-compiler arg 'basic t))))))))
 
 ;;;###autoload
@@ -96,15 +102,15 @@ Set to nil to inherit stderr."
   "Search with macOS Spotlight for files matching input.
 
 If DIR is a string, search within that directory.  When called
-interactively with a prefix argument (C-u), prompt for DIR.  DIR
-may also be a list of directories.  INITIAL is initial minibuffer input."
+interactively with a prefix argument, prompt for DIR.  DIR may
+also be a list of directories.  INITIAL is initial minibuffer input."
   (interactive
    (when current-prefix-arg
      (list (read-directory-name "Spotlight directory: "
                                 consult-spotlight-default-directory
                                 nil t))))
   (unless (executable-find "mdfind")
-    (user-error "consult-spotlight requires the mdfind command"))
+    (user-error "Consult Spotlight requires the mdfind command"))
   (let* ((dirs (if (and dir (listp dir))
                    dir
                  (list (or dir consult-spotlight-default-directory))))
@@ -116,7 +122,6 @@ may also be a list of directories.  INITIAL is initial minibuffer input."
           (consult--read
            (consult--process-collection builder
              :min-input consult-spotlight-min-input
-             :stderr consult-spotlight-stderr
              :highlight t)
            :prompt prompt
            :sort nil
