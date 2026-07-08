@@ -4,7 +4,7 @@
 
 ;; Author: MDF <sguibor@gmail.com>
 ;; URL: https://github.com/guibor/consult-spotlight
-;; Version: 0.1.0
+;; Version: 0.2.0
 ;; Package-Requires: ((emacs "28.1") (consult "2.0"))
 ;; Keywords: matching, files, convenience
 
@@ -28,6 +28,9 @@
 ;; consult-spotlight provides a Consult-powered interface to macOS
 ;; Spotlight (mdfind).  Results are fetched asynchronously and can be
 ;; opened directly from the minibuffer.
+;;
+;; With Embark, press `M-o b' on a candidate to open it in the default
+;; browser via `consult-spotlight-open-in-browser'.
 
 ;;; Code:
 
@@ -56,6 +59,10 @@ Can be either a string, or a list of strings or expressions."
 
 (defcustom consult-spotlight-silence-stderr t
   "Whether to discard stderr from the Spotlight process."
+  :type 'boolean)
+
+(defcustom consult-spotlight-register-embark-actions t
+  "Register `consult-spotlight-open-in-browser' on `embark-file-map'."
   :type 'boolean)
 
 (defvar consult-spotlight-history nil
@@ -97,13 +104,44 @@ Can be either a string, or a list of strings or expressions."
                          (list arg)))
                 (cdr (consult--default-regexp-compiler arg 'basic t))))))))
 
+(defun consult-spotlight--read (builder prompt &optional initial)
+  "Read a Spotlight result from BUILDER using PROMPT and optional INITIAL."
+  (consult--read
+   builder
+   :prompt prompt
+   :sort nil
+   :require-match t
+   :initial initial
+   :add-history (thing-at-point 'filename)
+   :category 'file
+   :state (consult--file-preview)
+   :history '(:input consult-spotlight-history)))
+
+;;;###autoload
+(defun consult-spotlight-open-in-browser (file)
+  "Open FILE or URL in the default browser."
+  (interactive "fOpen in browser: ")
+  (require 'browse-url)
+  (let ((file (substring-no-properties file)))
+    (browse-url
+     (if (string-match-p "\\`[a-z]+://" file)
+         file
+       (browse-url-file-url (expand-file-name file))))))
+
+(defun consult-spotlight--register-embark-actions ()
+  "Register Embark actions for Spotlight file candidates."
+  (define-key embark-file-map "b" #'consult-spotlight-open-in-browser))
+
 ;;;###autoload
 (defun consult-spotlight (&optional dir initial)
   "Search with macOS Spotlight for files matching input.
 
 If DIR is a string, search within that directory.  When called
 interactively with a prefix argument, prompt for DIR.  DIR may
-also be a list of directories.  INITIAL is initial minibuffer input."
+also be a list of directories.  INITIAL is initial minibuffer input.
+
+While selecting a candidate, use Embark (`M-o' by default) and then
+`b' to open the file in the default browser."
   (interactive
    (when current-prefix-arg
      (list (read-directory-name "Spotlight directory: "
@@ -118,20 +156,13 @@ also be a list of directories.  INITIAL is initial minibuffer input."
          (default-directory (file-name-as-directory
                              (expand-file-name (car dirs))))
          (builder (consult-spotlight--builder dirs))
-         (selection
-          (consult--read
-           (consult--process-collection builder
-             :min-input consult-spotlight-min-input
-             :highlight t)
-           :prompt prompt
-           :sort nil
-           :require-match t
-           :initial initial
-           :add-history (thing-at-point 'filename)
-           :category 'file
-           :history '(:input consult-spotlight-history))))
+         (selection (consult-spotlight--read builder prompt initial)))
     (when selection
       (find-file selection))))
+
+(with-eval-after-load 'embark
+  (when consult-spotlight-register-embark-actions
+    (consult-spotlight--register-embark-actions)))
 
 (provide 'consult-spotlight)
 ;;; consult-spotlight.el ends here
